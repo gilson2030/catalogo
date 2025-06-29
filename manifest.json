@@ -1,0 +1,13 @@
+{
+  "name": "Catálogo Rolli Shop",
+  "short_name": "Rolli Shop",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#FFD600",
+  "theme_color": "#5E2490",
+  "description": "Catálogo digital da loja Rolli Shop",
+  "icons": [
+    { "src": "img/logo.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "img/logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
