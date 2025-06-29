@@ -158,3 +158,34 @@ function editarProduto(catId, prodId) {
         <h3>Editar Produto</h3>
         <input id="prodNomeEdit" type="text" value="${p.nome}" style="width:100%;margin-bottom:8px;padding:8px">
         <input id="prodPrecoEdit" type="number" step="0.01" value="${p.preco}" style="width:100%;margin-bottom:8
+                <input id="prodPrecoEdit" type="number" step="0.01" value="${p.preco}" style="width:100%;margin-bottom:8px;padding:8px">
+        <input id="prodImgEdit" type="text" value="${p.img}" placeholder="URL da imagem" style="width:100%;margin-bottom:8px;padding:8px">
+        <textarea id="prodDescEdit" placeholder="Descrição" style="width:100%;margin-bottom:8px;padding:8px">${p.desc || ''}</textarea>
+        <button onclick="salvarEdicaoProduto('${catId}','${prodId}')">Salvar</button>
+        <button onclick="fecharModal()">Cancelar</button>
+      </div>
+    `;
+  });
+}
+function salvarEdicaoProduto(catId, prodId) {
+  const nome = document.getElementById('prodNomeEdit').value.trim();
+  const preco = parseFloat(document.getElementById('prodPrecoEdit').value);
+  const img = document.getElementById('prodImgEdit').value.trim();
+  const desc = document.getElementById('prodDescEdit').value.trim();
+  if(!nome || isNaN(preco)) return alert('Preencha todos os campos!');
+  db.collection('categorias').doc(catId).collection('produtos').doc(prodId).set({
+    nome, preco, img, desc
+  }).then(()=>{
+    fecharModal();
+    renderCategorias();
+  });
+}
+function excluirProduto(catId, prodId) {
+  event.stopPropagation();
+  if(confirm('Deseja excluir este produto?')) {
+    db.collection('categorias').doc(catId).collection('produtos').doc(prodId).delete().then(()=>{
+      renderCategorias();
+    });
+  }
+}
+
