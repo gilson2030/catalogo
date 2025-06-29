@@ -1,0 +1,130 @@
+:root {
+  --rolli-amarelo: #FFD600;
+  --rolli-roxo: #5E2490;
+  --branco: #fff;
+  --cinza: #f7f7f7;
+  --cinza-texto: #555;
+}
+
+body {
+  margin: 0;
+  background: var(--cinza);
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  background: var(--rolli-roxo);
+  color: var(--rolli-amarelo);
+  padding: 18px 12px;
+}
+.logo {
+  width: 50px;
+  margin-right: 18px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: 1px;
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+header p {
+  margin: 2px 0 0 0;
+  font-size: 1.04rem;
+  color: var(--branco);
+}
+
+main {
+  padding: 16px 8px;
+}
+
+.categoria {
+  margin-bottom: 20px;
+}
+.categoria h2 {
+  color: var(--rolli-roxo);
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.categoria .btn-excluir-cat {
+  background: #f33;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 5px 11px;
+  font-size: .94rem;
+  cursor: pointer;
+  margin-left: 10px;
+}
+.produtos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.produto-card {
+  background: var(--branco);
+  display: flex;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(80, 60, 120, 0.07);
+  padding: 10px;
+  align-items: center;
+  cursor: pointer;
+  transition: box-shadow .18s;
+}
+.produto-card:hover {
+  box-shadow: 0 4px 12px rgba(94,36,144,0.13);
+}
+.produto-img {
+  width: 58px;
+  height: 58px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-right: 15px;
+  background: var(--cinza);
+}
+.produto-info {
+  flex: 1;
+}
+.produto-nome {
+  color: var(--rolli-roxo);
+  font-weight: 700;
+  font-size: 1.09rem;
+}
+.produto-preco {
+  color: var(--rolli-amarelo);
+  font-weight: bold;
+  font-size: 1.02rem;
+}
+.produto-desc {
+  color: var(--cinza-texto);
+  font-size: .96rem;
+}
+button {
+  background: var(--rolli-amarelo);
+  color: var(--rolli-roxo);
+  font-weight: bold;
+  border: none;
+  border-radius: 7px;
+  padding: 10px 18px;
+  margin: 8px 4px;
+  font-size: 1.01rem;
+  cursor: pointer;
+  transition: background .14s;
+}
+button:hover {
+  background: #ffe145;
+}
+#modal {
+  position: fixed;
+  left: 0; top: 0; width: 100vw; height: 100vh;
+  background: rgba(20,0,45,0.30);
+  display: none;
+  align-items: center; justify-content: center;
+  z-index: 100;
+}
