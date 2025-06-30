@@ -3,11 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Detalhe do Produto - Rolli Shop</title>
+  <title>Produto | Rolli Shop</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .detalhe-container {
+      max-width: 380px;
+      margin: 32px auto 0 auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 2px 14px rgba(80,60,120,0.09);
+      padding: 0 0 28px 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .detalhe-img {
+      width: 100%;
+      max-height: 240px;
+      object-fit: cover;
+      background: #f6f6f6;
+      border-bottom: 2.5px solid #ffd60030;
+    }
+    .detalhe-info {
+      padding: 22px 18px 0 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+    .detalhe-nome {
+      font-size: 1.45em;
+      font-weight: 700;
+      color: #692080;
+      margin-bottom: 1px;
+    }
+    .detalhe-preco {
+      color: #FFD600;
+      font-size: 1.12em;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+    .detalhe-desc {
+      color: #3d3d3d;
+      font-size: 1.08em;
+      margin-bottom: 7px;
+      font-weight: 400;
+    }
+    .detalhe-botoes {
+      display: flex;
+      gap: 13px;
+      margin-top: 13px;
+    }
+    @media (max-width: 500px) {
+      .detalhe-container { max-width: 97vw; margin: 14px auto;}
+      .detalhe-info { padding: 14px 6px 0 6px;}
+    }
+  </style>
 </head>
 <body>
-  <div id="detalheProduto" style="max-width:400px;margin:40px auto"></div>
+  <div id="detalhe"></div>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -16,62 +68,49 @@
     function isAdmin() {
       return localStorage.getItem('adminLogado') === 'sim';
     }
-
-    // Recupera IDs
+    // Busca produto
     const catId = localStorage.getItem('catId');
     const prodId = localStorage.getItem('prodId');
+    db.collection('categorias').doc(catId).collection('produtos').doc(prodId).get().then(doc=>{
+      if(!doc.exists) {
+        document.getElementById('detalhe').innerHTML = "<p style='text-align:center;color:#b44;margin-top:50px;'>Produto não encontrado!</p>";
+        return;
+      }
+      const p = doc.data();
+      let html = `
+        <div class="detalhe-container">
+          <img src="${p.img || 'img/noimg.png'}" class="detalhe-img" alt="Imagem do Produto">
+          <div class="detalhe-info">
+            <div class="detalhe-nome">${p.nome}</div>
+            <div class="detalhe-preco">R$ ${p.preco ? Number(p.preco).toFixed(2) : ''}</div>
+            <div class="detalhe-desc">${p.desc || ''}</div>
+            <div class="detalhe-botoes">
+              <button onclick="window.history.back()" class="main-btn" style="width:110px;">Voltar</button>
+              ${isAdmin() 
+                ? `<button onclick="editar()" class="main-btn" style="width:110px;background:#ffd600;">Editar</button>
+                   <button onclick="excluir()" class="main-btn" style="width:110px;background:#ffe066;color:#8e2222;">Excluir</button>`
+                : ''
+              }
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('detalhe').innerHTML = html;
+    });
 
-    if (!catId || !prodId) {
-      document.getElementById('detalheProduto').innerHTML = '<p>Produto não encontrado.</p>';
-    } else {
-      db.collection('categorias').doc(catId).collection('produtos').doc(prodId).get().then(doc=>{
-        if(!doc.exists) {
-          document.getElementById('detalheProduto').innerHTML = '<p>Produto não encontrado.</p>';
-        } else {
-          const p = doc.data();
-          let html = `
-            <h1>${p.nome}</h1>
-            <h2 style="color:#ffd600">R$ ${p.preco.toFixed(2)}</h2>
-            <p>${p.desc || ''}</p>
-          `;
-          if (isAdmin()) {
-            html += `
-              <button onclick="editarProduto()">Editar</button>
-              <button onclick="excluirProduto()">Excluir</button>
-            `;
-          }
-          html += `
-            <button onclick="compartilharLink()">Compartilhar link</button>
-            <button onclick="voltar()">Voltar</button>
-          `;
-          document.getElementById('detalheProduto').innerHTML = html;
-        }
-      });
+    function editar() {
+      alert("Função editar pode ser integrada igual no catálogo.");
+      // Aqui você pode abrir o modal de edição igual no catálogo
     }
-
-    function editarProduto() {
-      alert('Funcionalidade de edição pode ser implementada aqui!');
-      // Ou redirecione para um modal ou outra página de edição
-    }
-    function excluirProduto() {
-      if(confirm('Deseja excluir este produto?')) {
+    function excluir() {
+      if(confirm("Tem certeza que deseja excluir este produto?")) {
+        const catId = localStorage.getItem('catId');
+        const prodId = localStorage.getItem('prodId');
         db.collection('categorias').doc(catId).collection('produtos').doc(prodId).delete().then(()=>{
-          alert('Produto excluído!');
+          alert("Produto excluído!");
           window.location.href = "index.html";
         });
       }
-    }
-    function compartilharLink() {
-      const url = window.location.href;
-      if (navigator.share) {
-        navigator.share({ title: document.title, url });
-      } else {
-        navigator.clipboard.writeText(url);
-        alert('Link copiado!');
-      }
-    }
-    function voltar() {
-      window.location.href = "index.html";
     }
   </script>
 </body>
