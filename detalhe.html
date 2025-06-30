@@ -7,84 +7,73 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="detalheProduto"></div>
-  <button id="editarBtn">Editar</button>
-  <button id="excluirBtn">Excluir</button>
-  <button id="compartilharBtn">Compartilhar link</button>
-  <button onclick="window.history.back()">Voltar</button>
-  <div id="modal"></div>
+  <div id="detalheProduto" style="max-width:400px;margin:40px auto"></div>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="firebase-config.js"></script>
   <script>
+    function isAdmin() {
+      return localStorage.getItem('adminLogado') === 'sim';
+    }
+
+    // Recupera IDs
     const catId = localStorage.getItem('catId');
     const prodId = localStorage.getItem('prodId');
-    let produtoAtual = null;
-    function renderDetalhe() {
+
+    if (!catId || !prodId) {
+      document.getElementById('detalheProduto').innerHTML = '<p>Produto não encontrado.</p>';
+    } else {
       db.collection('categorias').doc(catId).collection('produtos').doc(prodId).get().then(doc=>{
-        const p = doc.data();
-        produtoAtual = p;
-        let html = `<h2>${p.nome}</h2>
-          <img src="${p.img}" style="width:100%;max-width:350px">
-          <div class="produto-preco">R$ ${p.preco.toFixed(2)}</div>
-          <div class="produto-desc">${p.desc || ''}</div>
-        `;
-        document.getElementById('detalheProduto').innerHTML = html;
+        if(!doc.exists) {
+          document.getElementById('detalheProduto').innerHTML = '<p>Produto não encontrado.</p>';
+        } else {
+          const p = doc.data();
+          let html = `
+            <h1>${p.nome}</h1>
+            <h2 style="color:#ffd600">R$ ${p.preco.toFixed(2)}</h2>
+            <p>${p.desc || ''}</p>
+          `;
+          if (isAdmin()) {
+            html += `
+              <button onclick="editarProduto()">Editar</button>
+              <button onclick="excluirProduto()">Excluir</button>
+            `;
+          }
+          html += `
+            <button onclick="compartilharLink()">Compartilhar link</button>
+            <button onclick="voltar()">Voltar</button>
+          `;
+          document.getElementById('detalheProduto').innerHTML = html;
+        }
       });
     }
-    renderDetalhe();
 
-    document.getElementById('compartilharBtn').onclick = () => {
-      const link = window.location.href;
-      if (navigator.share) {
-        navigator.share({ title: 'Veja esse produto', url: link });
-      } else {
-        navigator.clipboard.writeText(link);
-        alert('Link copiado!');
-      }
+    function editarProduto() {
+      alert('Funcionalidade de edição pode ser implementada aqui!');
+      // Ou redirecione para um modal ou outra página de edição
     }
-    document.getElementById('excluirBtn').onclick = () => {
-      if(confirm('Tem certeza que deseja excluir esse produto?')) {
+    function excluirProduto() {
+      if(confirm('Deseja excluir este produto?')) {
         db.collection('categorias').doc(catId).collection('produtos').doc(prodId).delete().then(()=>{
           alert('Produto excluído!');
           window.location.href = "index.html";
         });
       }
     }
-    document.getElementById('editarBtn').onclick = () => {
-      abrirModalEditarProduto();
+    function compartilharLink() {
+      const url = window.location.href;
+      if (navigator.share) {
+        navigator.share({ title: document.title, url });
+      } else {
+        navigator.clipboard.writeText(url);
+        alert('Link copiado!');
+      }
     }
-    function abrirModalEditarProduto() {
-      const modal = document.getElementById('modal');
-      modal.style.display = 'flex';
-      modal.innerHTML = `
-        <div style="background:#fff;padding:25px 20px;border-radius:16px;max-width:370px;width:95%">
-          <h3>Editar Produto</h3>
-          <input id="prodNome" type="text" placeholder="Nome do Produto" value="${produtoAtual.nome}" style="width:100%;margin-bottom:8px;padding:8px">
-          <input id="prodPreco" type="number" step="0.01" placeholder="Preço" value="${produtoAtual.preco}" style="width:100%;margin-bottom:8px;padding:8px">
-          <input id="prodImg" type="text" placeholder="URL da imagem" value="${produtoAtual.img}" style="width:100%;margin-bottom:8px;padding:8px">
-          <textarea id="prodDesc" placeholder="Descrição" style="width:100%;margin-bottom:8px;padding:8px">${produtoAtual.desc || ''}</textarea>
-          <button onclick="salvarEdicaoProduto()">Salvar</button>
-          <button onclick="fecharModal()">Cancelar</button>
-        </div>
-      `;
-    }
-    function salvarEdicaoProduto() {
-      const nome = document.getElementById('prodNome').value.trim();
-      const preco = parseFloat(document.getElementById('prodPreco').value);
-      const img = document.getElementById('prodImg').value.trim();
-      const desc = document.getElementById('prodDesc').value.trim();
-      if(!nome || isNaN(preco)) return alert('Preencha todos os campos!');
-      db.collection('categorias').doc(catId).collection('produtos').doc(prodId).set({
-        nome, preco, img, desc
-      }).then(()=>{
-        fecharModal();
-        renderDetalhe();
-      });
-    }
-    function fecharModal() {
-      document.getElementById('modal').style.display = 'none';
+    function voltar() {
+      window.location.href = "index.html";
     }
   </script>
 </body>
 </html>
+
