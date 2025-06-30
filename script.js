@@ -1,8 +1,34 @@
+function isAdmin() {
+  return localStorage.getItem('adminLogado') === 'sim';
+}
+
 window.onload = () => {
+  // Mostra ou esconde botões de admin
+  if(isAdmin()){
+    document.getElementById('addItemBtn').style.display = '';
+    document.getElementById('addCatBtn').style.display = '';
+    document.getElementById('logoutBtn').style.display = '';
+    document.getElementById('loginBtn').style.display = 'none';
+  } else {
+    document.getElementById('addItemBtn').style.display = 'none';
+    document.getElementById('addCatBtn').style.display = 'none';
+    document.getElementById('logoutBtn').style.display = 'none';
+    document.getElementById('loginBtn').style.display = '';
+  }
+
   renderCategorias();
   document.getElementById('addItemBtn').onclick = abrirModalProduto;
   document.getElementById('addCatBtn').onclick = abrirModalCategoria;
+  document.getElementById('logoutBtn').onclick = logout;
+  document.getElementById('loginBtn').onclick = () => window.location.href = 'login.html';
 };
+
+function logout() {
+  firebase.auth().signOut().then(()=>{
+    localStorage.removeItem('adminLogado');
+    window.location.href = "index.html";
+  });
+}
 
 // Renderiza categorias e produtos
 async function renderCategorias() {
@@ -13,10 +39,12 @@ async function renderCategorias() {
   let html = '';
   for (const catDoc of categoriasSnap.docs) {
     const catData = catDoc.data();
-    html += `<div class="categoria"><h2>${catData.nome}
-      <button class="btn-excluir-cat" onclick="excluirCategoria('${catDoc.id}')">Excluir</button>
-      <button class="btn-editar-cat" onclick="editarCategoria('${catDoc.id}','${catData.nome}')">Editar</button>
-    </h2><div class="produtos">`;
+    html += `<div class="categoria"><h2>${catData.nome}`;
+    if(isAdmin()) {
+      html += `<button class="btn-excluir-cat" onclick="excluirCategoria('${catDoc.id}')">Excluir</button>
+               <button class="btn-editar-cat" onclick="editarCategoria('${catDoc.id}','${catData.nome}')">Editar</button>`;
+    }
+    html += `</h2><div class="produtos">`;
     // Busca produtos dessa categoria
     const prodsSnap = await db.collection('categorias').doc(catDoc.id).collection('produtos').get();
     for (const prodDoc of prodsSnap.docs) {
@@ -28,10 +56,12 @@ async function renderCategorias() {
             <div class="produto-nome">${p.nome}</div>
             <div class="produto-preco">R$ ${p.preco.toFixed(2)}</div>
             <div class="produto-desc">${p.desc || ''}</div>
-          </div>
-          <button onclick="event.stopPropagation(); editarProduto('${catDoc.id}','${prodDoc.id}')">Editar</button>
-          <button onclick="event.stopPropagation(); excluirProduto('${catDoc.id}','${prodDoc.id}')">Excluir</button>
-        </div>`;
+          </div>`;
+      if(isAdmin()) {
+        html += `<button onclick="event.stopPropagation(); editarProduto('${catDoc.id}','${prodDoc.id}')">Editar</button>
+                 <button onclick="event.stopPropagation(); excluirProduto('${catDoc.id}','${prodDoc.id}')">Excluir</button>`;
+      }
+      html += `</div>`;
     }
     html += '</div></div>';
   }
@@ -46,6 +76,7 @@ function abrirDetalhe(catId, prodId) {
 
 // --------- CRUD CATEGORIA ----------
 function abrirModalCategoria() {
+  if(!isAdmin()) return;
   const modal = document.getElementById('modal');
   modal.style.display = 'flex';
   modal.innerHTML = `
@@ -66,6 +97,7 @@ function salvarCategoria() {
   });
 }
 function editarCategoria(catId, nomeAntigo) {
+  if(!isAdmin()) return;
   const modal = document.getElementById('modal');
   modal.style.display = 'flex';
   modal.innerHTML = `
@@ -86,15 +118,14 @@ function salvarEdicaoCategoria(catId) {
   });
 }
 function excluirCategoria(catId) {
+  if(!isAdmin()) return;
   if(confirm('Excluir esta coleção e todos os produtos nela?')) {
-    // Exclui todos os produtos dessa categoria
     db.collection('categorias').doc(catId).collection('produtos').get().then(snapshot=>{
       const batch = db.batch();
       snapshot.forEach(doc=>{
         batch.delete(doc.ref);
       });
       batch.commit().then(()=>{
-        // Depois exclui a categoria
         db.collection('categorias').doc(catId).delete().then(()=>{
           renderCategorias();
         });
@@ -108,9 +139,9 @@ function fecharModal() {
 
 // --------- CRUD PRODUTO ----------
 function abrirModalProduto() {
+  if(!isAdmin()) return;
   const modal = document.getElementById('modal');
   modal.style.display = 'flex';
-  // Montar dropdown de categorias
   db.collection('categorias').get().then(cats=>{
     let options = '';
     cats.forEach(doc=>{
@@ -148,6 +179,7 @@ function salvarProduto() {
   });
 }
 function editarProduto(catId, prodId) {
+  if(!isAdmin()) return;
   event.stopPropagation();
   db.collection('categorias').doc(catId).collection('produtos').doc(prodId).get().then(doc=>{
     const p = doc.data();
@@ -157,8 +189,7 @@ function editarProduto(catId, prodId) {
       <div style="background:#fff;padding:25px 20px;border-radius:16px;max-width:370px;width:95%">
         <h3>Editar Produto</h3>
         <input id="prodNomeEdit" type="text" value="${p.nome}" style="width:100%;margin-bottom:8px;padding:8px">
-        <input id="prodPrecoEdit" type="number" step="0.01" value="${p.preco}" style="width:100%;margin-bottom:8
-                <input id="prodPrecoEdit" type="number" step="0.01" value="${p.preco}" style="width:100%;margin-bottom:8px;padding:8px">
+        <input id="prodPrecoEdit" type="number" step="0.01" value="${p.preco}" style="width:100%;margin-bottom:8px;padding:8px">
         <input id="prodImgEdit" type="text" value="${p.img}" placeholder="URL da imagem" style="width:100%;margin-bottom:8px;padding:8px">
         <textarea id="prodDescEdit" placeholder="Descrição" style="width:100%;margin-bottom:8px;padding:8px">${p.desc || ''}</textarea>
         <button onclick="salvarEdicaoProduto('${catId}','${prodId}')">Salvar</button>
@@ -181,6 +212,7 @@ function salvarEdicaoProduto(catId, prodId) {
   });
 }
 function excluirProduto(catId, prodId) {
+  if(!isAdmin()) return;
   event.stopPropagation();
   if(confirm('Deseja excluir este produto?')) {
     db.collection('categorias').doc(catId).collection('produtos').doc(prodId).delete().then(()=>{
@@ -188,4 +220,5 @@ function excluirProduto(catId, prodId) {
     });
   }
 }
+
 
