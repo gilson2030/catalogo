@@ -35,4 +35,19 @@
   </script>
 </body>
 </html>
+<button onclick="loginGoogle()">Entrar com Google</button>
+<script>
+  function loginGoogle() {
+    var provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider)
+      .then(function(result) {
+        // Autenticado com sucesso!
+        localStorage.setItem('adminLogado', 'sim');
+        window.location.href = "index.html";
+      })
+      .catch(function(error) {
+        document.getElementById('msg').innerText = "Erro no login com Google!";
+      });
+  }
+</script>
 
