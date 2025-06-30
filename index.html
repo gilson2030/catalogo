@@ -15,14 +15,18 @@
       <h1>Rolli Shop</h1>
       <p>Catálogo Online • Eletrônicos | Relógios | Óculos | Acessórios</p>
     </div>
+    <button id="loginBtn" style="margin-left:auto; display:none;">Login Admin</button>
+    <button id="logoutBtn" style="margin-left:auto; display:none;">Logout</button>
   </header>
   <main id="categorias"></main>
-  <button id="addItemBtn">+ Adicionar item</button>
-  <button id="addCatBtn">+ Adicionar coleção</button>
+  <button id="addItemBtn" style="display:none;">+ Adicionar item</button>
+  <button id="addCatBtn" style="display:none;">+ Adicionar coleção</button>
   <div id="modal"></div>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="firebase-config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
+
